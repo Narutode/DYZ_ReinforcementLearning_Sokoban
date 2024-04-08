@@ -14,8 +14,9 @@ public class GridWorldAlgo : MonoBehaviour
     public GameObject arrow3;
     public GameObject arrowParent;
 
-    float gamma = 0.5f;
+    float gamma = 0.01f;
     float deltaLimit = 0.0001f;
+    bool policy = true;
 
     public int sizeX = 5, sizeY = 5;
 
@@ -35,53 +36,59 @@ public class GridWorldAlgo : MonoBehaviour
     {
         gridValue = new float[sizeX, sizeY];
         gridPolicy = new int[sizeX, sizeY];
-        for (int x = 0; x < sizeX; x++) {
+        for (int x = 0; x < sizeX; x++)
+        {
             for (int y = 0; y < sizeY; y++)
             {
                 gridValue[x, y] = 0;
                 gridPolicy[x, y] = Random.Range(0, 4);
                 GameObject inst = null;
-                switch(grid[x,y])
+                switch (grid[x, y])
                 {
                     case 0:
                         inst = Instantiate(floor);
-                        inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, 0);
+                        inst.transform.position = new Vector3(x - sizeX / 2, y - sizeY / 2, 0);
                         break;
                     case 1:
                         inst = Instantiate(wall);
-                        inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, 0);
+                        inst.transform.position = new Vector3(x - sizeX / 2, y - sizeY / 2, 0);
                         break;
                     case 2:
                         inst = Instantiate(player);
-                        inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, 0);
+                        inst.transform.position = new Vector3(x - sizeX / 2, y - sizeY / 2, 0);
                         inst = Instantiate(floor);
-                        inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, 1);
+                        inst.transform.position = new Vector3(x - sizeX / 2, y - sizeY / 2, 1);
                         break;
                     case 3:
                         inst = Instantiate(finish);
-                        inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, 0);
+                        inst.transform.position = new Vector3(x - sizeX / 2, y - sizeY / 2, 0);
                         inst = Instantiate(floor);
-                        inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, 1);
+                        inst.transform.position = new Vector3(x - sizeX / 2, y - sizeY / 2, 1);
                         break;
                 }
             }
-        //Value Iteration
-        allValueEvaluation();
-        PolicyImprovement();
-        drawArrows();
+            //Value Iteration
+            if (!policy)
+            {
+                allValueEvaluation();
+                PolicyImprovement();
+                drawArrows();
+            }
+        }
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
         //Policy iteration
-        /*
-        deleteArrows();
-        PolicyEvaluation();
-        //allValueEvaluation();
-        drawArrows();
-        PolicyImprovement();
-        */
+        if (policy)
+        {
+            deleteArrows();
+            PolicyEvaluation();
+            //allValueEvaluation();
+            drawArrows();
+            policy = PolicyImprovement();
+        }
     }
 
     void PolicyEvaluation()
