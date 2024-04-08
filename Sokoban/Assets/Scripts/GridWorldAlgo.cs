@@ -14,7 +14,7 @@ public class GridWorldAlgo : MonoBehaviour
     public GameObject arrow3;
     public GameObject arrowParent;
 
-    float gamma = 0.01f;
+    float gamma = 0.5f;
     float deltaLimit = 0.0001f;
     bool policy = true;
 
@@ -67,13 +67,13 @@ public class GridWorldAlgo : MonoBehaviour
                         break;
                 }
             }
-            //Value Iteration
-            if (!policy)
-            {
-                allValueEvaluation();
-                PolicyImprovement();
-                drawArrows();
-            }
+        }
+        //Value Iteration
+        if (!policy)
+        {
+            allValueEvaluation();
+            PolicyImprovement();
+            drawArrows();
         }
     }
 
@@ -85,9 +85,8 @@ public class GridWorldAlgo : MonoBehaviour
         {
             deleteArrows();
             PolicyEvaluation();
-            //allValueEvaluation();
             drawArrows();
-            policy = PolicyImprovement();
+            policy = !PolicyImprovement();
         }
     }
 
@@ -102,42 +101,40 @@ public class GridWorldAlgo : MonoBehaviour
             {
                 for (int y = 0; y < sizeY; y++)
                 {
-                    if (grid[x, y] == 1)
+                    if (grid[x, y] == 1) //Cas wall
                     {
                         gridValue[x, y] = 0;
                         continue;
                     }
                     float vPrime = 0;
                     float prevValue = gridValue[x, y];
-                        switch (gridPolicy[x, y])
-                        {
-                            case 0:
-                                if (y - 1 >= 0)
-                                    if (grid[x, y - 1] != 1)
-                                        vPrime = gridValue[x, y - 1];
-                                break;
-                            case 1:
-                                if (x - 1 >= 0)
-                                    if (grid[x - 1, y] != 1)
-                                        vPrime = gridValue[x - 1, y];
-                                break;
-                            case 2:
-                                if (y + 1 < sizeY)
-                                    if (grid[x, y + 1] != 1)
-                                        vPrime = gridValue[x, y + 1];
-                                break;
-                            case 3:
-                                if (x + 1 < sizeX)
-                                    if (grid[x + 1, y] != 1)
-                                        vPrime = gridValue[x + 1, y];
-                                break;
-                        }
-                    
+                    switch (gridPolicy[x, y])
+                    {
+                        case 0:
+                            if (y - 1 >= 0)
+                                if (grid[x, y - 1] != 1)
+                                    vPrime = gridValue[x, y - 1];
+                            break;
+                        case 1:
+                            if (x - 1 >= 0)
+                                if (grid[x - 1, y] != 1)
+                                    vPrime = gridValue[x - 1, y];
+                            break;
+                        case 2:
+                            if (y + 1 < sizeY)
+                                if (grid[x, y + 1] != 1)
+                                    vPrime = gridValue[x, y + 1];
+                            break;
+                        case 3:
+                            if (x + 1 < sizeX)
+                                if (grid[x + 1, y] != 1)
+                                    vPrime = gridValue[x + 1, y];
+                            break;
+                    }            
                     gridValue[x, y] = reward(x, y) + gamma * vPrime;
                     delta = Mathf.Max(delta, Mathf.Abs(prevValue - gridValue[x, y]));
                 }
             }
-            //gridValue = gridValueTemp;
             if (delta < deltaLimit)
                 break;
         }
