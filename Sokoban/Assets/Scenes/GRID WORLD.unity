@@ -162,8 +162,8 @@ MonoBehaviour:
   arrow3: {fileID: 5223382092139310707, guid: 28699b4901822d845984d37b8ca4faf9, type: 3}
   arrowParent: {fileID: 1903125407}
   gamma: 0.5
-  sizeX: 5
-  sizeY: 5
+  sizeX: 6
+  sizeY: 8
 --- !u!4 &184564356
 Transform:
   m_ObjectHideFlags: 0

@@ -18,15 +18,16 @@ public class GridWorldAlgo : MonoBehaviour
 
     public int sizeX = 5, sizeY = 5;
 
-    public int[,] grid = {  { 0, 0, 0, 0, 3 },
-                            { 0, 1, 1, 1, 0 },
-                            { 0, 1, 0, 1, 0 },
-                            { 1, 1, 0, 1, 0 },
-                            { 2, 0, 0, 0, 0 }};
+    private int[,] grid = {  { 0, 0, 0, 0, 0 , 0, 0,0 },
+                            { 0, 1, 1, 1, 0, 0, 1, 0},
+                            { 0, 0, 0, 0, 0, 0, 0, 1},
+                            { 0, 1, 0, 1, 0, 0, 1, 1 },
+                            { 1, 1, 0, 1, 0 , 0, 1, 0},
+                            { 2, 0, 0, 0, 0 , 0, 0, 3}};
 
-    public float[,] gridValue;
+    private float[,] gridValue;
 
-    public int[,] gridPolicy;
+    private int[,] gridPolicy;
 
     // Start is called before the first frame update
     void Start()
@@ -43,23 +44,23 @@ public class GridWorldAlgo : MonoBehaviour
                 {
                     case 0:
                         inst = Instantiate(floor);
-                        inst.transform.position = new Vector3(x, y, 0);
+                        inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, 0);
                         break;
                     case 1:
                         inst = Instantiate(wall);
-                        inst.transform.position = new Vector3(x, y, 0);
+                        inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, 0);
                         break;
                     case 2:
                         inst = Instantiate(player);
-                        inst.transform.position = new Vector3(x, y, 0);
+                        inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, 0);
                         inst = Instantiate(floor);
-                        inst.transform.position = new Vector3(x, y, 1);
+                        inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, 1);
                         break;
                     case 3:
                         inst = Instantiate(finish);
-                        inst.transform.position = new Vector3(x, y, 0);
+                        inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, 0);
                         inst = Instantiate(floor);
-                        inst.transform.position = new Vector3(x, y, 1);
+                        inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, 1);
                         break;
                 }
             }
@@ -67,7 +68,7 @@ public class GridWorldAlgo : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         deleteArrows();
         PolicyEvaluation();
@@ -202,19 +203,19 @@ public class GridWorldAlgo : MonoBehaviour
                 {
                     case 0:
                         inst = Instantiate(arrow0, arrowParent.transform);
-                        inst.transform.position = new Vector3(x, y, -1);
+                        inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, -1);
                         break;
                     case 1:
                         inst = Instantiate(arrow1, arrowParent.transform);
-                        inst.transform.position = new Vector3(x, y, -1);
+                        inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, -1);
                         break;
                     case 2:
                         inst = Instantiate(arrow2, arrowParent.transform);
-                        inst.transform.position = new Vector3(x, y, -1);
+                        inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, -1);
                         break;
                     case 3:
                         inst = Instantiate(arrow3, arrowParent.transform);
-                        inst.transform.position = new Vector3(x, y, -1);
+                        inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, -1);
                         break;
                 }
             }
