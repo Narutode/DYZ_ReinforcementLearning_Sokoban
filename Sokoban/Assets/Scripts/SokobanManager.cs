@@ -46,6 +46,6 @@ public class SokobanManager : MonoBehaviour
             }
         }
 
-
+        // use WorldToCell to know where are player and crates on the grid
     }
 }
