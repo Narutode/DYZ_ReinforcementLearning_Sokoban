@@ -240,7 +240,12 @@ public class SokobanManager : MonoBehaviour, I_DPL
 
     void drawState()
     {
-        
+        SpawnPlayer(new Vector3Int(currentState.key[0], currentState.key[1], 0));
+
+        for (int i=2; i<nbCrates*2 +2 ; i+=2 )
+        {
+            SpawnCrate(new Vector3Int(currentState.key[i], currentState.key[i + 1], 0));
+        }
     }
 
     void CleanObjs()

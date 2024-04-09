@@ -310,6 +310,11 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1865698844 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8500862008392170838, guid: 882561cf04387f54a956e6559d1ea9bd, type: 3}
+  m_PrefabInstance: {fileID: 1118489515}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1880385916
 GameObject:
   m_ObjectHideFlags: 0
@@ -342,8 +347,8 @@ MonoBehaviour:
   tilemap: {fileID: 2060856493}
   cratesPos: []
   playerPos: {x: 0, y: 0, z: 0}
-  player: {fileID: 0}
-  crate: {fileID: 0}
+  player: {fileID: 2079334863}
+  crate: {fileID: 1865698844}
   nbCrates: 1
 --- !u!4 &1880385918
 Transform:
@@ -1818,6 +1823,11 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1 &2079334863 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7235998057818444733, guid: eb9dcfbee3cc8034b8c8c4e531cdabef, type: 3}
+  m_PrefabInstance: {fileID: 7235998057628660338}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &7235998057628660338
 PrefabInstance:
   m_ObjectHideFlags: 0
