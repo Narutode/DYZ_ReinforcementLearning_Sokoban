@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
+//using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 
 public class PlayerMovement : MonoBehaviour
@@ -14,12 +14,12 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
     }
-
+    /*
     private void OnMovement(InputValue value)
     {
         movement = value.Get<Vector2>();
     }
-
+    */
     private void FixedUpdate()
     {
         rb.MovePosition(rb.position + movement * speed * Time.deltaTime);
