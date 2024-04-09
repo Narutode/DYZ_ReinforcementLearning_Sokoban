@@ -6,6 +6,13 @@ using UnityEngine.Tilemaps;
 public class SokobanManager : MonoBehaviour, I_DPL
 {
     public Tilemap tilemap;
+    public Vector3Int[] cratesPos;
+    public Vector3Int playerPos;
+
+    public GameObject player, crate;
+
+    private GridLayout gridLayout;
+    private GameObject[] crates;
 
     // Array to store integer representation of the tilemap
     private int[,] integerTilemap;
@@ -126,6 +133,23 @@ public class SokobanManager : MonoBehaviour, I_DPL
 
     void Start()
     {
+        gridLayout = tilemap.transform.GetComponentInParent<GridLayout>();
+        crates = GameObject.FindGameObjectsWithTag("crate");
+        cratesPos = new Vector3Int[crates.Length];
+        Debug.Log($"crates length : {crates.Length}");
+        
+        for(int i =0; i<crates.Length; i++)
+        {
+            cratesPos[i] = gridLayout.WorldToCell(crates[i].transform.position);
+        }
+
+        GameObject player = GameObject.FindGameObjectWithTag("player");
+        playerPos = gridLayout.WorldToCell(player.transform.position);
+        Debug.Log($"playerPos : {playerPos}");
+        Debug.Log($"cratesPos[0] : {cratesPos[0]}");
+
+
+
         // Get the bounds of the tilemap
         BoundsInt bounds = tilemap.cellBounds;
 
@@ -165,8 +189,7 @@ public class SokobanManager : MonoBehaviour, I_DPL
                 else if (tile.name.Contains("2_99"))
                 {
                     integerTilemap[x, y] = 2; // OBJECTIVE
-                }
-                Debug.Log("Next");
+                }               
             }
         }
         mdp = new MDP(this);
@@ -218,5 +241,23 @@ public class SokobanManager : MonoBehaviour, I_DPL
     void drawState()
     {
         
+    }
+
+    void CleanObjs()
+    {
+        foreach(GameObject crateObj in crates)
+        {
+            Destroy(crateObj);
+        }
+    }
+
+    void SpawnCrate(Vector3Int gridPos)
+    {
+        Instantiate(crate,gridLayout.CellToWorld(gridPos),Quaternion.Euler(0,0,0));
+    }
+
+    void SpawnPlayer(Vector3Int gridPos)
+    {
+        Instantiate(player, gridLayout.CellToWorld(gridPos), Quaternion.Euler(0, 0, 0));
     }
 }
