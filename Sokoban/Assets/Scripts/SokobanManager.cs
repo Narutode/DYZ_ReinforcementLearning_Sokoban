@@ -13,6 +13,7 @@ public class SokobanManager : MonoBehaviour, I_DPL
     public int nbCrates = 1;
     bool policy = false;
     MDP mdp;
+    state currentState;
 
     public List<int> getActions()
     {
@@ -59,7 +60,7 @@ public class SokobanManager : MonoBehaviour, I_DPL
             int xc = st.key[(i + 1) * 2];
             int yc = st.key[((i + 1) * 2) + 1];
 
-            if(x == xc && y == yc)
+            if (x == xc && y == yc)
             {
                 switch (action)
                 {
@@ -87,6 +88,13 @@ public class SokobanManager : MonoBehaviour, I_DPL
                         else
                             xc++;
                         break;
+                }
+                for (int j = 0; j < nbCrates; j++)
+                {
+                    int xc2 = st.key[(i + 1) * 2];
+                    int yc2 = st.key[((i + 1) * 2) + 1];
+                    if (j != i && xc == xc2 && yc == yc2)
+                        return null;
                 }
             }
             newKey.Add(xc);
@@ -167,6 +175,7 @@ public class SokobanManager : MonoBehaviour, I_DPL
         {
             mdp.allValueEvaluation();
             mdp.PolicyImprovement();
+
         }
     }
 
@@ -199,5 +208,15 @@ public class SokobanManager : MonoBehaviour, I_DPL
             mdp.PolicyEvaluation();
             policy = !mdp.PolicyImprovement();
         }
+        else
+        {
+            drawState();
+            currentState = getNextState(currentState, currentState.policy);
+        }
+    }
+
+    void drawState()
+    {
+        
     }
 }
