@@ -59,7 +59,12 @@ public class MCTS
         while (indexMax > 0 && game.getReward(curState) <= 1)
         {
             indexMax--;
-            curState = game.getNextState(curState, curState.policy);
+            List<int> nextStateKey = game.getNextStateMCTS(currentNode.state, currentNode.state.policy);
+            state nextState = new state();
+            nextState.key = nextStateKey;
+            nextState.policy = Random.Range(0, 4);
+            nextState.value = 0;
+            curState = nextState;
         }
     }
 

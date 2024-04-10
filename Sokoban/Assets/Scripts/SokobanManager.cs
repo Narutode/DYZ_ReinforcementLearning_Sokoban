@@ -24,8 +24,8 @@ public class SokobanManager : MonoBehaviour, I_DPL
     //private int[,] integerTilemap;
     private int[,] grid = { { 1,1,1,1,1 },
                             { 1,0,0,2,1 },
-                            { 1,4,3,4,1 },
-                            { 1,2,0,0,1 },
+                            { 1,0,3,4,1 },
+                            { 1,0,0,0,1 },
                             { 1,1,1,1,1 } };
     int sizeX = 5, sizeY = 5;
     List<state> states = new List<state>();
@@ -345,14 +345,14 @@ public class SokobanManager : MonoBehaviour, I_DPL
             if (getReward(currentState) >= nbCrates)
                 end = true;
         }
-        else if (policy)
-        {
-            mdp.PolicyEvaluation();
-            draw = !mdp.PolicyImprovement();
-        }
         else if (end)
         {
             drawState();
+        }
+        else if (policy)
+        {
+            mdp.PolicyEvaluation();
+            draw = mdp.PolicyImprovement();
         }
     }
 

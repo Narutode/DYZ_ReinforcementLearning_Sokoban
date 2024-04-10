@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public class MDP
 {
@@ -36,6 +37,7 @@ public class MDP
                 st.value = game.getReward(st) + gamma * vPrime;
                 delta = Math.Max(delta, Math.Abs(prevValue - st.value));
             }
+            Debug.Log(delta);
             if (delta < deltaLimit)
                 break;
         }
