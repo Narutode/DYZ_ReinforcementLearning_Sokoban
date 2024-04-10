@@ -8,7 +8,7 @@ public class MDP
     List<state> states;
     List<int> actions;
     float gamma = 0.5f;
-    float deltaLimit = 0.001f;
+    float deltaLimit = 0.1f;
 
     public MDP(I_DPL g)
     {

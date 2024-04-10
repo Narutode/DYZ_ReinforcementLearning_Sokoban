@@ -13,5 +13,7 @@ public interface I_DPL
     List<state> getStates();
     List<int> getActions();
     state getNextState(state st, int action);
+    List<int> getNextStateMCTS(state st, int action);
     float getReward(state st);
+    state getFirstState();
 }

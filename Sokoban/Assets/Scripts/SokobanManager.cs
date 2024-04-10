@@ -30,9 +30,10 @@ public class SokobanManager : MonoBehaviour, I_DPL
     int sizeX = 5, sizeY = 5;
     List<state> states = new List<state>();
     public int nbCrates = 1;
-    bool policy = false;
+    bool policy = true, useMcts = false;
     bool draw = false, end = false;
     MDP mdp;
+    MCTS mcts;
     state currentState;
 
     public List<int> getActions()
@@ -123,8 +124,93 @@ public class SokobanManager : MonoBehaviour, I_DPL
         return states.First(t => t.key.SequenceEqual(newKey));
     }
 
+    public List<int> getNextStateMCTS(state st, int action)
+    {
+        int x = st.key[0];
+        int y = st.key[1];
+        switch (action)
+        {
+            case 0:
+                if (y - 1 < 0 || grid[x, y - 1] == 1)
+                    return null;
+                else
+                    y--;
+                break;
+            case 1:
+                if (x - 1 < 0 || grid[x - 1, y] == 1)
+                    return null;
+                else
+                    x--;
+                break;
+            case 2:
+                if (y + 1 >= sizeY || grid[x, y + 1] == 1)
+                    return null;
+                else
+                    y++;
+                break;
+            case 3:
+                if (x + 1 >= sizeX || grid[x + 1, y] == 1)
+                    return null;
+                else
+                    x++;
+                break;
+        }
+        List<int> newKey = new List<int>();
+        newKey.Add(x);
+        newKey.Add(y);
+
+        for (int i = 0; i < nbCrates; i++)
+        {
+            int xc = st.key[(i + 1) * 2];
+            int yc = st.key[((i + 1) * 2) + 1];
+
+            if (x == xc && y == yc)
+            {
+                switch (action)
+                {
+                    case 0:
+                        if (yc - 1 <= 0 || grid[xc, yc - 1] == 1)
+                            return null;
+                        else
+                            yc--;
+                        break;
+                    case 1:
+                        if (xc - 1 <= 0 || grid[xc - 1, yc] == 1)
+                            return null;
+                        else
+                            xc--;
+                        break;
+                    case 2:
+                        if (yc + 1 <= 0 || grid[xc, yc + 1] == 1)
+                            return null;
+                        else
+                            yc++;
+                        break;
+                    case 3:
+                        if (xc + 1 <= 0 || grid[xc + 1, yc] == 1)
+                            return null;
+                        else
+                            xc++;
+                        break;
+                }
+                for (int j = 0; j < nbCrates; j++)
+                {
+                    int xc2 = st.key[(i + 1) * 2];
+                    int yc2 = st.key[((i + 1) * 2) + 1];
+                    if (j != i && xc == xc2 && yc == yc2)
+                        return null;
+                }
+            }
+            newKey.Add(xc);
+            newKey.Add(yc);
+        }
+        return newKey;
+    }
+
     public float getReward(state st)
     {
+        if (st == null)
+            return nbCrates;
         float reward = 0;
         try
         {
@@ -135,7 +221,7 @@ public class SokobanManager : MonoBehaviour, I_DPL
 
                 if (grid[x, y] == 2)
                 {
-                    reward++;
+                    reward += 1 / (float)(nbCrates);
                 }
             }
         }
@@ -151,6 +237,11 @@ public class SokobanManager : MonoBehaviour, I_DPL
         return states;
     }
 
+    public state getFirstState()
+    {
+        return currentState;
+    }
+
     void Start()
     {
         GameObject inst;
@@ -161,15 +252,18 @@ public class SokobanManager : MonoBehaviour, I_DPL
         {
             for (int y = 0; y < sizeY; y++)
             {
-                List<int> xy = new List<int>() { x, y };
-                List<List<int>> newList = addCratesToState(nbCrates-1, xy);
-                foreach(var key in newList)
+                if (!useMcts)
                 {
-                    state newState = new state();
-                    newState.key = key;
-                    newState.value = 0;
-                    newState.policy = Random.Range(0, 4);
-                    states.Add(newState);
+                    List<int> xy = new List<int>() { x, y };
+                    List<List<int>> newList = addCratesToState(nbCrates - 1, xy);
+                    foreach (var key in newList)
+                    {
+                        state newState = new state();
+                        newState.key = key;
+                        newState.value = 0;
+                        newState.policy = Random.Range(0, 4);
+                        states.Add(newState);
+                    }
                 }
 
                 switch(grid[x,y]) {
@@ -207,10 +301,13 @@ public class SokobanManager : MonoBehaviour, I_DPL
             startKey.Add(cratePos[i][0]);
             startKey.Add(cratePos[i][1]);
         }
-        mdp = new MDP(this);
         currentState = states.First(t => t.key.SequenceEqual(startKey));
+        if (useMcts)
+            mcts = new MCTS(this);
+        else
+            mdp = new MDP(this);
         //Value Iteration
-        if (!policy)
+        if (!useMcts && !policy)
         {
             mdp.allValueEvaluation();
             mdp.PolicyImprovement();
@@ -261,13 +358,16 @@ public class SokobanManager : MonoBehaviour, I_DPL
 
     void drawState()
     {
-        CleanObjs();
-
-        SpawnPlayer(new Vector3Int(currentState.key[0] - sizeX / 2, currentState.key[1] - sizeY / 2, -1));
-
-        for (int i=2; i<nbCrates*2 +2 ; i+=2)
+        if (currentState != null)
         {
-            SpawnCrate(new Vector3Int(currentState.key[i] - sizeX / 2, currentState.key[i + 1] - sizeY / 2, -1));
+            CleanObjs();
+
+            SpawnPlayer(new Vector3Int(currentState.key[0] - sizeX / 2, currentState.key[1] - sizeY / 2, -1));
+
+            for (int i = 2; i < nbCrates * 2 + 2; i += 2)
+            {
+                SpawnCrate(new Vector3Int(currentState.key[i] - sizeX / 2, currentState.key[i + 1] - sizeY / 2, -1));
+            }
         }
     }
 

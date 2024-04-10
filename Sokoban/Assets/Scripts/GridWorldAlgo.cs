@@ -178,4 +178,14 @@ public class GridWorldAlgo : MonoBehaviour, I_DPL
             return 1;
         else return 0;
     }
+
+    public state getFirstState()
+    {
+        return null;
+    }
+
+    public List<int> getNextStateMCTS(state st, int action)
+    {
+        return null;
+    }
 }
