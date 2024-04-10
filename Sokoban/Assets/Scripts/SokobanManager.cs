@@ -263,11 +263,11 @@ public class SokobanManager : MonoBehaviour, I_DPL
     {
         CleanObjs();
 
-        SpawnPlayer(new Vector3Int(currentState.key[0] - sizeX / 2, currentState.key[1] - sizeY / 2, 0));
+        SpawnPlayer(new Vector3Int(currentState.key[0] - sizeX / 2, currentState.key[1] - sizeY / 2, -1));
 
         for (int i=2; i<nbCrates*2 +2 ; i+=2)
         {
-            SpawnCrate(new Vector3Int(currentState.key[i] - sizeX / 2, currentState.key[i + 1] - sizeY / 2, 0));
+            SpawnCrate(new Vector3Int(currentState.key[i] - sizeX / 2, currentState.key[i + 1] - sizeY / 2, -1));
         }
     }
 
