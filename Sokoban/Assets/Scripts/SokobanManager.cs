@@ -5,20 +5,33 @@ using UnityEngine.Tilemaps;
 
 public class SokobanManager : MonoBehaviour, I_DPL
 {
+    public GameObject floor;
+    public GameObject wall;
+    public GameObject player;
+    public GameObject finish;
+    public GameObject crate;
+
     public Tilemap tilemap;
     public Vector3Int[] cratesPos;
     public Vector3Int playerPos;
 
-    public GameObject player, crate;
+    public GameObject parent;
 
     private GridLayout gridLayout;
     private GameObject[] crates;
 
     // Array to store integer representation of the tilemap
-    private int[,] integerTilemap;
+    //private int[,] integerTilemap;
+    private int[,] grid = { { 1,1,1,1,1 },
+                            { 1,0,0,2,1 },
+                            { 1,4,3,4,1 },
+                            { 1,2,0,0,1 },
+                            { 1,1,1,1,1 } };
+    int sizeX = 5, sizeY = 5;
     List<state> states = new List<state>();
     public int nbCrates = 1;
     bool policy = false;
+    bool draw = false, end = false;
     MDP mdp;
     state currentState;
 
@@ -34,25 +47,25 @@ public class SokobanManager : MonoBehaviour, I_DPL
         switch (action)
         {
             case 0:
-                if (y - 1 <= 0 || integerTilemap[x, y - 1] == 1)
+                if (y - 1 < 0 || grid[x, y - 1] == 1)
                     return null;
                 else
                     y--;
                 break;
             case 1:
-                if (x - 1 <= 0 || integerTilemap[x - 1, y] == 1)
+                if (x - 1 < 0 || grid[x - 1, y] == 1)
                     return null;
                 else
                     x--;
                 break;
             case 2:
-                if (y+  1 <= 0 || integerTilemap[x, y + 1] == 1)
+                if (y +  1 >= sizeY || grid[x, y + 1] == 1)
                     return null;
                 else
                     y++;
                 break;
             case 3:
-                if (x + 1 <= 0 || integerTilemap[x + 1, y] == 1)
+                if (x + 1 >= sizeX || grid[x + 1, y] == 1)
                     return null;
                 else
                     x++;
@@ -72,25 +85,25 @@ public class SokobanManager : MonoBehaviour, I_DPL
                 switch (action)
                 {
                     case 0:
-                        if (yc - 1 <= 0 || integerTilemap[xc, yc - 1] == 1)
+                        if (yc - 1 <= 0 || grid[xc, yc - 1] == 1)
                             return null;
                         else
                             yc--;
                         break;
                     case 1:
-                        if (xc - 1 <= 0 || integerTilemap[xc - 1, yc] == 1)
+                        if (xc - 1 <= 0 || grid[xc - 1, yc] == 1)
                             return null;
                         else
                             xc--;
                         break;
                     case 2:
-                        if (yc + 1 <= 0 || integerTilemap[xc, yc + 1] == 1)
+                        if (yc + 1 <= 0 || grid[xc, yc + 1] == 1)
                             return null;
                         else
                             yc++;
                         break;
                     case 3:
-                        if (xc + 1 <= 0 || integerTilemap[xc + 1, yc] == 1)
+                        if (xc + 1 <= 0 || grid[xc + 1, yc] == 1)
                             return null;
                         else
                             xc++;
@@ -113,15 +126,22 @@ public class SokobanManager : MonoBehaviour, I_DPL
     public float getReward(state st)
     {
         float reward = 0;
-        for(int i = 0; i < nbCrates; i++)
+        try
         {
-            int x = st.key[(i + 1) * 2];
-            int y = st.key[((i + 1) * 2) + 1];
-
-            if (integerTilemap[x,y] == 2)
+            for (int i = 0; i < nbCrates; i++)
             {
-                reward++;
+                int x = st.key[(i + 1) * 2];
+                int y = st.key[((i + 1) * 2) + 1];
+
+                if (grid[x, y] == 2)
+                {
+                    reward++;
+                }
             }
+        }
+        catch(System.Exception e)
+        {
+            int a = 0;
         }
         return reward;
     }
@@ -133,32 +153,13 @@ public class SokobanManager : MonoBehaviour, I_DPL
 
     void Start()
     {
-        gridLayout = tilemap.transform.GetComponentInParent<GridLayout>();
-        crates = GameObject.FindGameObjectsWithTag("crate");
-        cratesPos = new Vector3Int[crates.Length];
-        Debug.Log($"crates length : {crates.Length}");
-        
-        for(int i =0; i<crates.Length; i++)
+        GameObject inst;
+        int[] playerPos = new int[2];
+        List<int[]> cratePos = new List<int[]>();
+
+        for (int x = 0; x < sizeX; x++)
         {
-            cratesPos[i] = gridLayout.WorldToCell(crates[i].transform.position);
-        }
-
-        GameObject player = GameObject.FindGameObjectWithTag("player");
-        playerPos = gridLayout.WorldToCell(player.transform.position);
-        Debug.Log($"playerPos : {playerPos}");
-        Debug.Log($"cratesPos[0] : {cratesPos[0]}");
-
-
-
-        // Get the bounds of the tilemap
-        BoundsInt bounds = tilemap.cellBounds;
-
-        // Initialize the integerTilemap array
-        integerTilemap = new int[bounds.size.x, bounds.size.y];
-
-        for (int x = 0; x < bounds.size.x; x++)
-        {
-            for (int y = 0; y < bounds.size.y; y++)
+            for (int y = 0; y < sizeY; y++)
             {
                 List<int> xy = new List<int>() { x, y };
                 List<List<int>> newList = addCratesToState(nbCrates-1, xy);
@@ -170,45 +171,59 @@ public class SokobanManager : MonoBehaviour, I_DPL
                     newState.policy = Random.Range(0, 4);
                     states.Add(newState);
                 }
-                Vector3Int tilePosition = new Vector3Int(bounds.xMin + x, bounds.yMin + y, 0);
-                TileBase tile = tilemap.GetTile(tilePosition);
 
-                // Check if the tile is null (no tile)
-                if (tile == null)
-                {
-                    integerTilemap[x, y] = -1; // Represent no tile as -1
+                switch(grid[x,y]) {
+                    case 0:
+                        inst = Instantiate(floor);
+                        inst.transform.position = new Vector3(x - sizeX / 2, y - sizeY / 2, 0);
+                        break;
+                    case 1:
+                        inst = Instantiate(wall);
+                        inst.transform.position = new Vector3(x - sizeX / 2, y - sizeY / 2, 0);
+                        break;
+                    case 2:
+                        inst = Instantiate(finish);
+                        inst.transform.position = new Vector3(x - sizeX / 2, y - sizeY / 2, 0);
+                        break;
+                    case 3:
+                        inst = Instantiate(floor);
+                        inst.transform.position = new Vector3(x - sizeX / 2, y - sizeY / 2, 0);
+                        playerPos[0] = x;
+                        playerPos[1] = y;
+                        break;
+                    case 4:
+                        inst = Instantiate(floor);
+                        inst.transform.position = new Vector3(x - sizeX / 2, y - sizeY / 2, 0);
+                        cratePos.Add(new int[] { x, y });
+                        break;
                 }
-                else if (tile.name.Contains("2_87"))
-                {
-                    integerTilemap[x, y] = 0; // GROUND
-                }
-                else if (tile.name.Contains("2_83"))
-                {
-                    integerTilemap[x, y] = 1; // WALL
-                }
-                else if (tile.name.Contains("2_99"))
-                {
-                    integerTilemap[x, y] = 2; // OBJECTIVE
-                }               
             }
         }
+        List<int> startKey = new List<int>();
+        startKey.Add(playerPos[0]);
+        startKey.Add(playerPos[1]);
+        for(int i = 0;  i < cratePos.Count(); i++)
+        {
+            startKey.Add(cratePos[i][0]);
+            startKey.Add(cratePos[i][1]);
+        }
         mdp = new MDP(this);
+        currentState = states.First(t => t.key.SequenceEqual(startKey));
         //Value Iteration
         if (!policy)
         {
             mdp.allValueEvaluation();
             mdp.PolicyImprovement();
-
+            draw = true;
         }
     }
 
     List<List<int>> addCratesToState(int n, List<int> prev)
     {
         List<List<int>> listKeys = new List<List<int>>();
-        BoundsInt bounds = tilemap.cellBounds;
-        for (int x = 0; x < bounds.size.x; x++)
+        for (int x = 0; x < sizeX; x++)
         {
-            for (int y = 0; y < bounds.size.y; y++)
+            for (int y = 0; y < sizeY; y++)
             {
                 List<int> newKey = new List<int>();
                 newKey.AddRange(prev);
@@ -226,43 +241,51 @@ public class SokobanManager : MonoBehaviour, I_DPL
     void FixedUpdate()
     {
         //Policy iteration
-        if (policy)
-        {
-            mdp.PolicyEvaluation();
-            policy = !mdp.PolicyImprovement();
-        }
-        else
+        if (draw && !end)
         {
             drawState();
             currentState = getNextState(currentState, currentState.policy);
+            if (getReward(currentState) >= nbCrates)
+                end = true;
+        }
+        else if (policy)
+        {
+            mdp.PolicyEvaluation();
+            draw = !mdp.PolicyImprovement();
+        }
+        else if (end)
+        {
+            drawState();
         }
     }
 
     void drawState()
     {
-        SpawnPlayer(new Vector3Int(currentState.key[0], currentState.key[1], 0));
+        CleanObjs();
 
-        for (int i=2; i<nbCrates*2 +2 ; i+=2 )
+        SpawnPlayer(new Vector3Int(currentState.key[0] - sizeX / 2, currentState.key[1] - sizeY / 2, 0));
+
+        for (int i=2; i<nbCrates*2 +2 ; i+=2)
         {
-            SpawnCrate(new Vector3Int(currentState.key[i], currentState.key[i + 1], 0));
+            SpawnCrate(new Vector3Int(currentState.key[i] - sizeX / 2, currentState.key[i + 1] - sizeY / 2, 0));
         }
     }
 
     void CleanObjs()
     {
-        foreach(GameObject crateObj in crates)
+        for(int i = 0; i < parent.transform.childCount; i++) 
         {
-            Destroy(crateObj);
+            Destroy(parent.transform.GetChild(i).gameObject);
         }
     }
 
     void SpawnCrate(Vector3Int gridPos)
     {
-        Instantiate(crate,gridLayout.CellToWorld(gridPos),Quaternion.Euler(0,0,0));
+        Instantiate(crate, gridPos, Quaternion.Euler(0,0,0), parent.transform);
     }
 
     void SpawnPlayer(Vector3Int gridPos)
     {
-        Instantiate(player, gridLayout.CellToWorld(gridPos), Quaternion.Euler(0, 0, 0));
+        Instantiate(player, gridPos, Quaternion.Euler(0, 0, 0), parent.transform);
     }
 }
