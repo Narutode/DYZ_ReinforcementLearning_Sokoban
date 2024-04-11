@@ -22,19 +22,30 @@ public class SokobanManager : MonoBehaviour, I_DPL
 
     // Array to store integer representation of the tilemap
     //private int[,] integerTilemap;
-    private int[,] grid = { { 1,1,1,1,1 },
-                            { 1,0,0,2,1 },
-                            { 1,0,3,4,1 },
-                            { 1,0,0,0,1 },
-                            { 1,1,1,1,1 } };
-    int sizeX = 5, sizeY = 5;
+    
+    private int[,] grid = { { 0,0,2,0 },
+                            { 4,3,4,4 },
+                            { 0,0,0,0 },
+                            { 2,0,0,2 } };
+    /*
+    private int[,] grid = { {0,0,1,1,1,1,1,0 },
+                            {1,1,1,0,0,0,1,0 },
+                            {1,2,3,4,0,0,1,0 },
+                            {1,1,1,0,4,2,1,0 },
+                            {1,2,1,1,4,0,1,0 },
+                            {1,0,1,0,2,0,1,1 },
+                            {1,4,4,2,4,4,2,1 },
+                            {1,0,0,0,2,0,0,1 },
+                            { 1,1,1,1,1,1,1,1 } };*/
+    int sizeY = 4, sizeX = 4;
     List<state> states = new List<state>();
     public int nbCrates = 1;
-    bool policy = true, useMcts = false;
+    bool policy = true, useMcts = true;
     bool draw = false, end = false;
     MDP mdp;
     MCTS mcts;
     state currentState;
+    int index = 0;
 
     public List<int> getActions()
     {
@@ -60,13 +71,13 @@ public class SokobanManager : MonoBehaviour, I_DPL
                     x--;
                 break;
             case 2:
-                if (y +  1 >= sizeY || grid[x, y + 1] == 1)
+                if (y +  1 >= sizeX || grid[x, y + 1] == 1)
                     return null;
                 else
                     y++;
                 break;
             case 3:
-                if (x + 1 >= sizeX || grid[x + 1, y] == 1)
+                if (x + 1 >= sizeY || grid[x + 1, y] == 1)
                     return null;
                 else
                     x++;
@@ -86,25 +97,25 @@ public class SokobanManager : MonoBehaviour, I_DPL
                 switch (action)
                 {
                     case 0:
-                        if (yc - 1 <= 0 || grid[xc, yc - 1] == 1)
+                        if (yc - 1 < 0 || grid[xc, yc - 1] == 1)
                             return null;
                         else
                             yc--;
                         break;
                     case 1:
-                        if (xc - 1 <= 0 || grid[xc - 1, yc] == 1)
+                        if (xc - 1 < 0 || grid[xc - 1, yc] == 1)
                             return null;
                         else
                             xc--;
                         break;
                     case 2:
-                        if (yc + 1 <= 0 || grid[xc, yc + 1] == 1)
+                        if (yc + 1 >= sizeX || grid[xc, yc + 1] == 1)
                             return null;
                         else
                             yc++;
                         break;
                     case 3:
-                        if (xc + 1 <= 0 || grid[xc + 1, yc] == 1)
+                        if (xc + 1 >= sizeY || grid[xc + 1, yc] == 1)
                             return null;
                         else
                             xc++;
@@ -143,13 +154,13 @@ public class SokobanManager : MonoBehaviour, I_DPL
                     x--;
                 break;
             case 2:
-                if (y + 1 >= sizeY || grid[x, y + 1] == 1)
+                if (y + 1 >= sizeX || grid[x, y + 1] == 1)
                     return null;
                 else
                     y++;
                 break;
             case 3:
-                if (x + 1 >= sizeX || grid[x + 1, y] == 1)
+                if (x + 1 >= sizeY || grid[x + 1, y] == 1)
                     return null;
                 else
                     x++;
@@ -169,25 +180,25 @@ public class SokobanManager : MonoBehaviour, I_DPL
                 switch (action)
                 {
                     case 0:
-                        if (yc - 1 <= 0 || grid[xc, yc - 1] == 1)
+                        if (yc - 1 < 0 || grid[xc, yc - 1] == 1)
                             return null;
                         else
                             yc--;
                         break;
                     case 1:
-                        if (xc - 1 <= 0 || grid[xc - 1, yc] == 1)
+                        if (xc - 1 < 0 || grid[xc - 1, yc] == 1)
                             return null;
                         else
                             xc--;
                         break;
                     case 2:
-                        if (yc + 1 <= 0 || grid[xc, yc + 1] == 1)
+                        if (yc + 1 >= sizeX || grid[xc, yc + 1] == 1)
                             return null;
                         else
                             yc++;
                         break;
                     case 3:
-                        if (xc + 1 <= 0 || grid[xc + 1, yc] == 1)
+                        if (xc + 1 >= sizeY || grid[xc + 1, yc] == 1)
                             return null;
                         else
                             xc++;
@@ -195,8 +206,8 @@ public class SokobanManager : MonoBehaviour, I_DPL
                 }
                 for (int j = 0; j < nbCrates; j++)
                 {
-                    int xc2 = st.key[(i + 1) * 2];
-                    int yc2 = st.key[((i + 1) * 2) + 1];
+                    int xc2 = st.key[(j + 1) * 2];
+                    int yc2 = st.key[((j + 1) * 2) + 1];
                     if (j != i && xc == xc2 && yc == yc2)
                         return null;
                 }
@@ -221,7 +232,7 @@ public class SokobanManager : MonoBehaviour, I_DPL
 
                 if (grid[x, y] == 2)
                 {
-                    reward += 1 / (float)(nbCrates);
+                    reward += 1 / (float)nbCrates;
                 }
             }
         }
@@ -248,9 +259,9 @@ public class SokobanManager : MonoBehaviour, I_DPL
         int[] playerPos = new int[2];
         List<int[]> cratePos = new List<int[]>();
 
-        for (int x = 0; x < sizeX; x++)
+        for (int x = 0; x < sizeY; x++)
         {
-            for (int y = 0; y < sizeY; y++)
+            for (int y = 0; y < sizeX; y++)
             {
                 if (!useMcts)
                 {
@@ -269,25 +280,25 @@ public class SokobanManager : MonoBehaviour, I_DPL
                 switch(grid[x,y]) {
                     case 0:
                         inst = Instantiate(floor);
-                        inst.transform.position = new Vector3(x - sizeX / 2, y - sizeY / 2, 0);
+                        inst.transform.position = new Vector3(x - sizeY / 2, y - sizeX / 2, 0);
                         break;
                     case 1:
                         inst = Instantiate(wall);
-                        inst.transform.position = new Vector3(x - sizeX / 2, y - sizeY / 2, 0);
+                        inst.transform.position = new Vector3(x - sizeY / 2, y - sizeX / 2, 0);
                         break;
                     case 2:
                         inst = Instantiate(finish);
-                        inst.transform.position = new Vector3(x - sizeX / 2, y - sizeY / 2, 0);
+                        inst.transform.position = new Vector3(x - sizeY / 2, y - sizeX / 2, 0);
                         break;
                     case 3:
                         inst = Instantiate(floor);
-                        inst.transform.position = new Vector3(x - sizeX / 2, y - sizeY / 2, 0);
+                        inst.transform.position = new Vector3(x - sizeY / 2, y - sizeX / 2, 0);
                         playerPos[0] = x;
                         playerPos[1] = y;
                         break;
                     case 4:
                         inst = Instantiate(floor);
-                        inst.transform.position = new Vector3(x - sizeX / 2, y - sizeY / 2, 0);
+                        inst.transform.position = new Vector3(x - sizeY / 2, y - sizeX / 2, 0);
                         cratePos.Add(new int[] { x, y });
                         break;
                 }
@@ -301,11 +312,19 @@ public class SokobanManager : MonoBehaviour, I_DPL
             startKey.Add(cratePos[i][0]);
             startKey.Add(cratePos[i][1]);
         }
-        currentState = states.First(t => t.key.SequenceEqual(startKey));
         if (useMcts)
+        {
+            currentState = new state();
+            currentState.key = startKey;
+            currentState.value = 0;
+            currentState.policy = Random.Range(0, 4);
             mcts = new MCTS(this);
+        }
         else
+        {
+            currentState = states.First(t => t.key.SequenceEqual(startKey));
             mdp = new MDP(this);
+        }
         //Value Iteration
         if (!useMcts && !policy)
         {
@@ -318,9 +337,9 @@ public class SokobanManager : MonoBehaviour, I_DPL
     List<List<int>> addCratesToState(int n, List<int> prev)
     {
         List<List<int>> listKeys = new List<List<int>>();
-        for (int x = 0; x < sizeX; x++)
+        for (int x = 0; x < sizeY; x++)
         {
-            for (int y = 0; y < sizeY; y++)
+            for (int y = 0; y < sizeX; y++)
             {
                 List<int> newKey = new List<int>();
                 newKey.AddRange(prev);
@@ -345,9 +364,32 @@ public class SokobanManager : MonoBehaviour, I_DPL
             if (getReward(currentState) >= nbCrates)
                 end = true;
         }
-        else if (end)
+        else if (end && !useMcts)
         {
             drawState();
+        }
+        else if(end)
+        {
+            if(index < states.Count()-1)
+            {
+                currentState = states[index];
+                drawState();
+                index++;
+            }
+        }
+        else if (useMcts)
+        {
+            while(!mcts.selection())
+            {
+                mcts.expension();
+                mcts.simulation();
+                mcts.propagation();
+            }
+            mcts.expension();
+            mcts.simulation();
+            mcts.propagation();
+            end = true;
+            states = mcts.getStates();
         }
         else if (policy)
         {
@@ -362,11 +404,11 @@ public class SokobanManager : MonoBehaviour, I_DPL
         {
             CleanObjs();
 
-            SpawnPlayer(new Vector3Int(currentState.key[0] - sizeX / 2, currentState.key[1] - sizeY / 2, -1));
+            SpawnPlayer(new Vector3Int(currentState.key[0] - sizeY / 2, currentState.key[1] - sizeX / 2, -1));
 
             for (int i = 2; i < nbCrates * 2 + 2; i += 2)
             {
-                SpawnCrate(new Vector3Int(currentState.key[i] - sizeX / 2, currentState.key[i + 1] - sizeY / 2, -1));
+                SpawnCrate(new Vector3Int(currentState.key[i] - sizeY / 2, currentState.key[i + 1] - sizeX / 2, -1));
             }
         }
     }

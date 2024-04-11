@@ -5,9 +5,11 @@ using UnityEngine;
 public class noeud
 {
     public state state;
-    public noeud parent;
+    public noeud parent = null;
     public noeud[] childs = new noeud[4];
     public bool end = true;
+    public float trys = 0;
+    public float score = 0;
 }
 
 public class MCTS
@@ -17,6 +19,7 @@ public class MCTS
     List<int> actions;
     noeud firstNode;
     noeud currentNode;
+    float probaExplo = 0.5f;
 
     public MCTS(I_DPL g)
     {
@@ -26,50 +29,122 @@ public class MCTS
         firstNode.state = game.getFirstState();
     }
 
-    void selection()
+    public bool selection()
     {
         currentNode = firstNode;
         while(!currentNode.end)
         {
-            currentNode = currentNode.childs[currentNode.state.policy];
+            if(Random.Range(0f,1f) > probaExplo)
+            {
+                noeud newNode = currentNode.childs[Random.Range(0, 4)];
+                while(newNode == null)
+                    newNode = currentNode.childs[Random.Range(0, 4)];
+                currentNode = newNode;
+            }
+            else
+            {
+                noeud newNode = currentNode.childs[currentNode.state.policy];
+                while (newNode == null)
+                    newNode = currentNode.childs[Random.Range(0, 4)];
+                currentNode = newNode;          
+            }
         }
-        currentNode.end = false;
+        return (game.getReward(currentNode.state) >= 1);
     }
 
-    void expension()
+    public void expension()
     {
+        currentNode.end = false;
         for (int i = 0; i < 4; i++)
         {
-            List<int> nextStateKey = game.getNextStateMCTS(currentNode.state, currentNode.state.policy);
-            state nextState = new state();
-            nextState.key = nextStateKey;
-            nextState.policy = Random.Range(0, 4);
-            nextState.value = 0;
-            noeud nextNode = new noeud();
-            nextNode.state = nextState;
-            nextNode.parent = currentNode;
-            currentNode.childs[i] = nextNode;
+            List<int> nextStateKey = game.getNextStateMCTS(currentNode.state, i);
+            if(nextStateKey == null)
+            {
+                currentNode.childs[i] = null;
+            }
+            else
+            {
+                state nextState = new state();
+                nextState.key = nextStateKey;
+                nextState.policy = Random.Range(0, 4);
+                nextState.value = 0;
+                noeud nextNode = new noeud();
+                nextNode.state = nextState;
+                nextNode.parent = currentNode;
+                currentNode.childs[i] = nextNode;
+            }
         }
+        noeud newNode = currentNode.childs[currentNode.state.policy];
+        while (newNode == null)
+            newNode = currentNode.childs[Random.Range(0, 4)];
+        currentNode = newNode;
     }
 
-    void simulation()
+    public void simulation()
     {
-        int indexMax = 20;
-        state curState = currentNode.state;
-        while (indexMax > 0 && game.getReward(curState) <= 1)
+        float res = 0;
+        for (int i = 0; i < 20; i++)
         {
-            indexMax--;
-            List<int> nextStateKey = game.getNextStateMCTS(currentNode.state, currentNode.state.policy);
-            state nextState = new state();
-            nextState.key = nextStateKey;
-            nextState.policy = Random.Range(0, 4);
-            nextState.value = 0;
-            curState = nextState;
+            float indexMax = 100;
+            state curState = currentNode.state;
+            while (indexMax > 1 && game.getReward(curState) < 1)
+            {
+                indexMax--;
+                List<int> nextStateKey = null;
+                while(nextStateKey == null)
+                    nextStateKey = game.getNextStateMCTS(curState, Random.Range(0, 4));
+                state nextState = new state();
+                nextState.key = nextStateKey;
+                nextState.policy = Random.Range(0, 4);
+                nextState.value = 0;
+                curState = nextState;
+            }
+            res += game.getReward(curState);
+        }
+        currentNode.trys += 20;
+        currentNode.score += res;
+    }
+
+    public void propagation()
+    {
+        float curScore = currentNode.score;
+        while(currentNode.parent != null)
+        {
+            currentNode = currentNode.parent;
+            currentNode.score += curScore;
+            currentNode.trys += 20;
+            float valMax = 0;
+            int iMax = currentNode.state.policy;
+            for(int i = 0; i < 4; i++)
+            {
+                noeud child = currentNode.childs[i];
+                if(child != null)
+                {
+                    if (child.trys > 0)
+                    {
+                        if ((child.score / child.trys) > valMax)
+                        {
+                            valMax = (child.score / child.trys);
+                            iMax = i;
+                        }
+                    }
+                }
+            }
+            currentNode.state.policy = iMax;
         }
     }
 
-    void propagation()
+    public List<state> getStates()
     {
-
+        List<state> listeStates = new List<state>();
+        while(!firstNode.end)
+        {
+            listeStates.Add(firstNode.state);
+            firstNode = firstNode.childs[firstNode.state.policy];
+            if (firstNode == null)
+                break;
+        }
+        listeStates.Add(currentNode.state);
+        return listeStates;
     }
 }
