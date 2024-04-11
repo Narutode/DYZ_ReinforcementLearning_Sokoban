@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class noeud
@@ -15,7 +16,8 @@ public class noeud
 public class MCTS
 {
     I_DPL game;
-    List<noeud> treeStates;
+    //List<state> allStates;
+    List<noeud> allNoeud;
     List<int> actions;
     noeud firstNode;
     noeud currentNode;
@@ -27,6 +29,10 @@ public class MCTS
         actions = game.getActions();
         firstNode = new noeud();
         firstNode.state = game.getFirstState();
+        //allStates = new List<state>();
+        //allStates.Add(firstNode.state);
+        allNoeud = new List<noeud>();
+        allNoeud.Add(firstNode);
     }
 
     public bool selection()
@@ -64,13 +70,19 @@ public class MCTS
             }
             else
             {
-                state nextState = new state();
-                nextState.key = nextStateKey;
-                nextState.policy = Random.Range(0, 4);
-                nextState.value = 0;
-                noeud nextNode = new noeud();
-                nextNode.state = nextState;
-                nextNode.parent = currentNode;
+                noeud nextNode = allNoeud.FirstOrDefault(t => t.state.key.SequenceEqual(nextStateKey));
+                if(nextNode == null)
+                {
+                    state nextState = new state();
+                    nextState.key = nextStateKey;
+                    nextState.policy = Random.Range(0, 4);
+                    nextState.value = 0;
+                    //allStates.Add(nextState);
+                    nextNode = new noeud();
+                    nextNode.state = nextState;
+                    nextNode.parent = currentNode;
+                    allNoeud.Add(nextNode);
+                }
                 currentNode.childs[i] = nextNode;
             }
         }
@@ -90,13 +102,20 @@ public class MCTS
             while (indexMax < 100 && game.getReward(curState) < 1)
             {
                 indexMax++;
-                List<int> nextStateKey = null;
+                List<int> nextStateKey = game.getNextStateMCTS(curState, curState.policy);
                 while(nextStateKey == null)
                     nextStateKey = game.getNextStateMCTS(curState, Random.Range(0, 4));
-                state nextState = new state();
-                nextState.key = nextStateKey;
-                nextState.policy = Random.Range(0, 4);
-                nextState.value = 0;
+                noeud nextNode = allNoeud.FirstOrDefault(t => t.state.key.SequenceEqual(nextStateKey));
+                state nextState;
+                if (nextNode == null)
+                {
+                    nextState = new state();
+                    nextState.key = nextStateKey;
+                    nextState.policy = Random.Range(0, 4);
+                    nextState.value = 0;
+                }
+                else
+                    nextState = nextNode.state;
                 curState = nextState;
             }
             res += game.getReward(curState) / indexMax;
