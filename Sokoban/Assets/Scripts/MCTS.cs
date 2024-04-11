@@ -85,11 +85,11 @@ public class MCTS
         float res = 0;
         for (int i = 0; i < 20; i++)
         {
-            float indexMax = 100;
+            float indexMax = 1;
             state curState = currentNode.state;
-            while (indexMax > 1 && game.getReward(curState) < 1)
+            while (indexMax < 100 && game.getReward(curState) < 1)
             {
-                indexMax--;
+                indexMax++;
                 List<int> nextStateKey = null;
                 while(nextStateKey == null)
                     nextStateKey = game.getNextStateMCTS(curState, Random.Range(0, 4));
@@ -99,7 +99,7 @@ public class MCTS
                 nextState.value = 0;
                 curState = nextState;
             }
-            res += game.getReward(curState);
+            res += game.getReward(curState) / indexMax;
         }
         currentNode.trys += 20;
         currentNode.score += res;

@@ -23,10 +23,11 @@ public class SokobanManager : MonoBehaviour, I_DPL
     // Array to store integer representation of the tilemap
     //private int[,] integerTilemap;
     
-    private int[,] grid = { { 0,0,2,0 },
-                            { 4,3,4,4 },
-                            { 0,0,0,0 },
-                            { 2,0,0,2 } };
+    private int[,] grid = { { 0,0,2,0,0 },
+                            { 4,3,4,4,0 },
+                            { 0,0,0,4,2 },
+                            { 0,0,0,4,2 },
+                            { 2,0,0,2,0 } };
     /*
     private int[,] grid = { {0,0,1,1,1,1,1,0 },
                             {1,1,1,0,0,0,1,0 },
@@ -37,7 +38,7 @@ public class SokobanManager : MonoBehaviour, I_DPL
                             {1,4,4,2,4,4,2,1 },
                             {1,0,0,0,2,0,0,1 },
                             { 1,1,1,1,1,1,1,1 } };*/
-    int sizeY = 4, sizeX = 4;
+    int sizeY = 5, sizeX = 5;
     List<state> states = new List<state>();
     public int nbCrates = 1;
     bool policy = true, useMcts = true;
@@ -370,12 +371,14 @@ public class SokobanManager : MonoBehaviour, I_DPL
         }
         else if(end)
         {
-            if(index < states.Count()-1)
+            if (index < states.Count() - 1)
             {
                 currentState = states[index];
                 drawState();
                 index++;
             }
+            else
+                index = 0;
         }
         else if (useMcts)
         {
