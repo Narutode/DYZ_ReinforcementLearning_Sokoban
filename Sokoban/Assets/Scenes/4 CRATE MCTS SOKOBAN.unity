@@ -324,6 +324,7 @@ MonoBehaviour:
   nbCrates: 4
   policy: 1
   useMcts: 1
+  mctsOnPolicy: 1
 --- !u!4 &1880385918
 Transform:
   m_ObjectHideFlags: 0

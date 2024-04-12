@@ -321,10 +321,10 @@ MonoBehaviour:
   cratesPos: []
   playerPos: {x: 0, y: 0, z: 0}
   parent: {fileID: 1598336795}
-  nbCrates: 3
+  nbCrates: 4
   policy: 1
   useMcts: 1
-  mctsOnPolicy: 1
+  mctsOnPolicy: 0
 --- !u!4 &1880385918
 Transform:
   m_ObjectHideFlags: 0

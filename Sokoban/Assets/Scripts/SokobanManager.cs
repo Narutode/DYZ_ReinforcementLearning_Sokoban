@@ -19,10 +19,10 @@ public class SokobanManager : MonoBehaviour, I_DPL
     private noeud firstNoeud;
     private noeud curNoeud;
     
-    private int[,] grid = { { 0,0,2,0,0 },
+    private int[,] grid = { { 2,0,2,0,0 },
                             { 4,3,4,0,0 },
                             { 0,0,0,4,2 },
-                            { 0,0,0,4,0 },
+                            { 4,0,0,4,0 },
                             { 2,0,0,2,0 } };
     
     private int[,] grid1 = {{ 0,0,2,0,0 },
@@ -60,7 +60,7 @@ public class SokobanManager : MonoBehaviour, I_DPL
     public int nbCrates = 1;
     public bool policy = true, useMcts = true;
     bool draw = false, end = false;
-    bool mctsOnPolicy = false;
+    public bool mctsOnPolicy = false;
     int episodes = 20;
     MDP mdp;
     MCTS mcts;
