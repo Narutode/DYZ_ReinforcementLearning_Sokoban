@@ -18,6 +18,7 @@ public class GridWorldAlgo : MonoBehaviour, I_DPL
     float gamma = 0.5f;
     float deltaLimit = 0.0001f;
     public bool policy = false, useMcts = false;
+    public int episode = 20;
 
     public int sizeX = 5, sizeY = 5;
 
@@ -121,11 +122,11 @@ public class GridWorldAlgo : MonoBehaviour, I_DPL
             while (!mcts.selection())
             {
                 mcts.expension();
-                mcts.simulation();
+                mcts.simulation(episode);
                 mcts.propagation();
             }
             mcts.expension();
-            mcts.simulation();
+            mcts.simulation(episode);
             mcts.propagation();
             end = true;
             firstNoeud = mcts.getStates();

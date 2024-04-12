@@ -39,6 +39,8 @@ public class SokobanManager : MonoBehaviour, I_DPL
     public int nbCrates = 1;
     public bool policy = true, useMcts = true;
     bool draw = false, end = false;
+    bool mctsOnPolicy = false;
+    int episodes = 20;
     MDP mdp;
     MCTS mcts;
     state currentState;
@@ -312,11 +314,22 @@ public class SokobanManager : MonoBehaviour, I_DPL
             while(!mcts.selection())
             {
                 mcts.expension();
-                mcts.simulation();
-                mcts.propagation();
+                if (mctsOnPolicy)
+                {
+                    for(int i = 0; i < episodes; i++)
+                    {
+                        mcts.simulation(1);
+                        mcts.propagation();
+                    }
+                } 
+                else
+                {
+                    mcts.simulation(episodes);
+                    mcts.propagation();
+                }
             }
             mcts.expension();
-            mcts.simulation();
+            mcts.simulation(1);
             mcts.propagation();
             end = true;
             firstNoeud = mcts.getStates();

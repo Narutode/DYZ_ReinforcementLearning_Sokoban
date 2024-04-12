@@ -9,7 +9,7 @@ public class noeud
     public noeud parent = null;
     public noeud[] childs = new noeud[4];
     public bool end = true;
-    public float trys = 0;
+    public float essais = 0;
     public float score = 0;
 }
 
@@ -29,8 +29,6 @@ public class MCTS
         actions = game.getActions();
         firstNode = new noeud();
         firstNode.state = game.getFirstState();
-        //allStates = new List<state>();
-        //allStates.Add(firstNode.state);
         allNoeud = new List<noeud>();
         allNoeud.Add(firstNode);
     }
@@ -70,19 +68,14 @@ public class MCTS
             }
             else
             {
-                noeud nextNode = allNoeud.FirstOrDefault(t => t.state.key.SequenceEqual(nextStateKey));
-                if(nextNode == null)
-                {
-                    state nextState = new state();
-                    nextState.key = nextStateKey;
-                    nextState.policy = Random.Range(0, 4);
-                    nextState.value = 0;
-                    //allStates.Add(nextState);
-                    nextNode = new noeud();
-                    nextNode.state = nextState;
-                    nextNode.parent = currentNode;
-                    allNoeud.Add(nextNode);
-                }
+                state nextState = new state();
+                nextState.key = nextStateKey;
+                nextState.policy = Random.Range(0, 4);
+                nextState.value = 0;
+                noeud nextNode = new noeud();
+                nextNode.state = nextState;
+                nextNode.parent = currentNode;
+                allNoeud.Add(nextNode);
                 currentNode.childs[i] = nextNode;
             }
         }
@@ -92,10 +85,10 @@ public class MCTS
         currentNode = newNode;
     }
 
-    public void simulation()
+    public void simulation(int n)
     {
         float res = 0;
-        for (int i = 0; i < 20; i++)
+        for (int i = 0; i < n; i++)
         {
             float indexMax = 1;
             state curState = currentNode.state;
@@ -120,7 +113,7 @@ public class MCTS
             }
             res += game.getReward(curState) / indexMax;
         }
-        currentNode.trys += 20;
+        currentNode.essais += n;
         currentNode.score += res;
     }
 
@@ -131,7 +124,7 @@ public class MCTS
         {
             currentNode = currentNode.parent;
             currentNode.score += curScore;
-            currentNode.trys += 20;
+            currentNode.essais += 20;
             float valMax = 0;
             int iMax = currentNode.state.policy;
             for(int i = 0; i < 4; i++)
@@ -139,11 +132,11 @@ public class MCTS
                 noeud child = currentNode.childs[i];
                 if(child != null)
                 {
-                    if (child.trys > 0)
+                    if (child.essais > 0)
                     {
-                        if ((child.score / child.trys) > valMax)
+                        if ((child.score / child.essais) > valMax)
                         {
-                            valMax = (child.score / child.trys);
+                            valMax = (child.score / child.essais);
                             iMax = i;
                         }
                     }
@@ -155,17 +148,6 @@ public class MCTS
 
     public noeud getStates()
     {
-        /*
-        List<state> listeStates = new List<state>();
-        while(!firstNode.end)
-        {
-            listeStates.Add(firstNode.state);
-            firstNode = firstNode.childs[firstNode.state.policy];
-            if (firstNode == null)
-                break;
-        }
-        listeStates.Add(currentNode.state);
-        */
         return firstNode;
     }
 }
