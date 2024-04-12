@@ -20,9 +20,30 @@ public class SokobanManager : MonoBehaviour, I_DPL
     private noeud curNoeud;
     
     private int[,] grid = { { 0,0,2,0,0 },
-                            { 4,3,4,4,0 },
+                            { 4,3,4,0,0 },
                             { 0,0,0,4,2 },
+                            { 0,0,0,4,0 },
+                            { 2,0,0,2,0 } };
+    
+    private int[,] grid1 = {{ 0,0,2,0,0 },
+                            { 0,3,4,0,0 },
+                            { 0,0,0,0,2 },
                             { 0,0,0,0,0 },
+                            { 2,0,0,2,0 } };
+    private int[,] grid2 = {{ 0,0,2,0,0 },
+                            { 4,3,4,0,0 },
+                            { 0,0,0,0,2 },
+                            { 0,0,0,0,0 },
+                            { 2,0,0,2,0 } };
+    private int[,] grid3 = {{ 0,0,2,0,0 },
+                            { 4,3,4,0,0 },
+                            { 0,0,0,0,2 },
+                            { 0,0,0,4,0 },
+                            { 2,0,0,2,0 } };
+    private int[,] grid4 = {{ 0,0,2,0,0 },
+                            { 4,3,4,0,0 },
+                            { 0,0,0,4,2 },
+                            { 0,0,0,4,0 },
                             { 2,0,0,2,0 } };
     /*
     private int[,] grid = { {0,0,1,1,1,1,1,0 },
@@ -177,6 +198,23 @@ public state getFirstState()
 
 void Start()
 {
+    if (nbCrates == 1)
+    {
+        grid = grid1;
+    }
+    else if (nbCrates == 2)
+    {
+        grid = grid2;
+    }
+    else if (nbCrates == 3)
+    {
+        grid = grid3;
+    }
+    else if (nbCrates == 4)
+    {
+        grid = grid4;
+    }
+    
    GameObject inst;
    int[] playerPos = new int[2];
    List<int[]> cratePos = new List<int[]>();
