@@ -45,10 +45,10 @@ public class SokobanManager : MonoBehaviour, I_DPL
     MCTS mcts;
     state currentState;
 
-    public List<int> getActions()
-    {
-        return new List<int>() { 0, 1, 2, 3 };
-    }
+public List<int> getActions()
+{
+   return new List<int>() { 0, 1, 2, 3 };
+}
 
     public state getNextState(state st, int action)
     {
@@ -62,7 +62,7 @@ public class SokobanManager : MonoBehaviour, I_DPL
     {
         int y = st.key[0];
         int x = st.key[1];
-        //On vérifie si la position du joueur n'est pas en dehors de la carte ou sur un mur
+        //On vï¿½rifie si la position du joueur n'est pas en dehors de la carte ou sur un mur
         switch (action)
         {
             case 0:
@@ -94,14 +94,14 @@ public class SokobanManager : MonoBehaviour, I_DPL
         newKey.Add(y);
         newKey.Add(x);
 
-        //Si l'action est valide on vérifie si la position du joueur est sur une caisse
+        //Si l'action est valide on vï¿½rifie si la position du joueur est sur une caisse
         for (int i = 0; i < nbCrates; i++)
         {
             int xc = st.key[(i + 1) * 2];
             int yc = st.key[((i + 1) * 2) + 1];
 
-            //Si c'est le cas on déplace la caisse dans la même direction
-            //En vérifiant si elle n'est pas en dehors de la carte ou sur un mur
+            //Si c'est le cas on dï¿½place la caisse dans la mï¿½me direction
+            //En vï¿½rifiant si elle n'est pas en dehors de la carte ou sur un mur
             if (y == xc && x == yc)
             {
                 switch (action)
@@ -131,8 +131,8 @@ public class SokobanManager : MonoBehaviour, I_DPL
                             xc++;
                         break;
                 }
-                //On vérifie en suite que la caisse n'est pas au même endroit qu'une autre caisse
-                //Sinon on annule le déplacement
+                //On vï¿½rifie en suite que la caisse n'est pas au mï¿½me endroit qu'une autre caisse
+                //Sinon on annule le dï¿½placement
                 for (int j = 0; j < nbCrates; j++)
                 {
                     int xc2 = st.key[(j + 1) * 2];
@@ -165,27 +165,27 @@ public class SokobanManager : MonoBehaviour, I_DPL
         return reward;
     }
 
-    public List<state> getStates()
-    {
-        return states;
-    }
+public List<state> getStates()
+{
+   return states;
+}
 
-    public state getFirstState()
-    {
-        return currentState;
-    }
+public state getFirstState()
+{
+   return currentState;
+}
 
-    void Start()
-    {
-        GameObject inst;
-        int[] playerPos = new int[2];
-        List<int[]> cratePos = new List<int[]>();
+void Start()
+{
+   GameObject inst;
+   int[] playerPos = new int[2];
+   List<int[]> cratePos = new List<int[]>();
 
         for (int x = 0; x < sizeY; x++)
         {
             for (int y = 0; y < sizeX; y++)
             {
-                //Si on utilise pas le mcts on initialise tous les états possible
+                //Si on utilise pas le mcts on initialise tous les ï¿½tats possible
                 if (!useMcts)
                 {
                     List<int> xy = new List<int>() { x, y };
@@ -228,7 +228,7 @@ public class SokobanManager : MonoBehaviour, I_DPL
             }
         }
 
-        //on initialise l'état de départ
+        //on initialise l'ï¿½tat de dï¿½part
         List<int> startKey = new List<int>();
         startKey.Add(playerPos[0]);
         startKey.Add(playerPos[1]);
@@ -260,25 +260,25 @@ public class SokobanManager : MonoBehaviour, I_DPL
         }
     }
 
-    List<List<int>> addCratesToState(int n, List<int> prev)
-    {
-        List<List<int>> listKeys = new List<List<int>>();
-        for (int x = 0; x < sizeY; x++)
-        {
-            for (int y = 0; y < sizeX; y++)
-            {
-                List<int> newKey = new List<int>();
-                newKey.AddRange(prev);
-                newKey.Add(x);
-                newKey.Add(y);
-                if (n > 0)
-                    listKeys.AddRange(addCratesToState(n - 1, newKey));
-                else
-                    listKeys.Add(newKey);
-            }
-        }
-        return listKeys;
-    }
+List<List<int>> addCratesToState(int n, List<int> prev)
+{
+   List<List<int>> listKeys = new List<List<int>>();
+   for (int x = 0; x < sizeY; x++)
+   {
+       for (int y = 0; y < sizeX; y++)
+       {
+           List<int> newKey = new List<int>();
+           newKey.AddRange(prev);
+           newKey.Add(x);
+           newKey.Add(y);
+           if (n > 0)
+               listKeys.AddRange(addCratesToState(n - 1, newKey));
+           else
+               listKeys.Add(newKey);
+       }
+   }
+   return listKeys;
+}
 
     void FixedUpdate()
     {
@@ -345,36 +345,36 @@ public class SokobanManager : MonoBehaviour, I_DPL
         }
     }
 
-    void drawState()
-    {
-        if (currentState != null)
-        {
-            CleanObjs();
+void drawState()
+{
+   if (currentState != null)
+   {
+       CleanObjs();
 
-            SpawnPlayer(new Vector3Int(currentState.key[0] - sizeY / 2, currentState.key[1] - sizeX / 2, -1));
+       SpawnPlayer(new Vector3Int(currentState.key[0] - sizeY / 2, currentState.key[1] - sizeX / 2, -1));
 
-            for (int i = 2; i < nbCrates * 2 + 2; i += 2)
-            {
-                SpawnCrate(new Vector3Int(currentState.key[i] - sizeY / 2, currentState.key[i + 1] - sizeX / 2, -1));
-            }
-        }
-    }
+       for (int i = 2; i < nbCrates * 2 + 2; i += 2)
+       {
+           SpawnCrate(new Vector3Int(currentState.key[i] - sizeY / 2, currentState.key[i + 1] - sizeX / 2, -1));
+       }
+   }
+}
 
-    void CleanObjs()
-    {
-        for(int i = 0; i < parent.transform.childCount; i++) 
-        {
-            Destroy(parent.transform.GetChild(i).gameObject);
-        }
-    }
+void CleanObjs()
+{
+   for(int i = 0; i < parent.transform.childCount; i++) 
+   {
+       Destroy(parent.transform.GetChild(i).gameObject);
+   }
+}
 
-    void SpawnCrate(Vector3Int gridPos)
-    {
-        Instantiate(crate, gridPos, Quaternion.Euler(0,0,0), parent.transform);
-    }
+void SpawnCrate(Vector3Int gridPos)
+{
+   Instantiate(crate, gridPos, Quaternion.Euler(0,0,0), parent.transform);
+}
 
-    void SpawnPlayer(Vector3Int gridPos)
-    {
-        Instantiate(player, gridPos, Quaternion.Euler(0, 0, 0), parent.transform);
-    }
+void SpawnPlayer(Vector3Int gridPos)
+{
+   Instantiate(player, gridPos, Quaternion.Euler(0, 0, 0), parent.transform);
+}
 }
