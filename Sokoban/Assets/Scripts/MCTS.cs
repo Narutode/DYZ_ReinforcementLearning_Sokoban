@@ -63,7 +63,7 @@ public class MCTS
         currentNode.end = false;
         for (int i = 0; i < 4; i++)
         {
-            List<int> nextStateKey = game.getNextStateMCTS(currentNode.state, i);
+            List<int> nextStateKey = game.getNextStateKey(currentNode.state, i);
             if(nextStateKey == null)
             {
                 currentNode.childs[i] = null;
@@ -102,9 +102,9 @@ public class MCTS
             while (indexMax < 100 && game.getReward(curState) < 1)
             {
                 indexMax++;
-                List<int> nextStateKey = game.getNextStateMCTS(curState, curState.policy);
+                List<int> nextStateKey = game.getNextStateKey(curState, curState.policy);
                 while(nextStateKey == null)
-                    nextStateKey = game.getNextStateMCTS(curState, Random.Range(0, 4));
+                    nextStateKey = game.getNextStateKey(curState, Random.Range(0, 4));
                 noeud nextNode = allNoeud.FirstOrDefault(t => t.state.key.SequenceEqual(nextStateKey));
                 state nextState;
                 if (nextNode == null)
@@ -153,8 +153,9 @@ public class MCTS
         }
     }
 
-    public List<state> getStates()
+    public noeud getStates()
     {
+        /*
         List<state> listeStates = new List<state>();
         while(!firstNode.end)
         {
@@ -164,6 +165,7 @@ public class MCTS
                 break;
         }
         listeStates.Add(currentNode.state);
-        return listeStates;
+        */
+        return firstNode;
     }
 }

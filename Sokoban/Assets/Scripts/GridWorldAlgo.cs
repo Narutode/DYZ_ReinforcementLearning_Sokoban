@@ -13,11 +13,11 @@ public class GridWorldAlgo : MonoBehaviour, I_DPL
     public GameObject arrow1;
     public GameObject arrow2;
     public GameObject arrow3;
-    public GameObject arrowParent;
+    public GameObject parent;
 
     float gamma = 0.5f;
     float deltaLimit = 0.0001f;
-    bool policy = false;
+    public bool policy = false, useMcts = false;
 
     public int sizeX = 5, sizeY = 5;
 
@@ -28,13 +28,19 @@ public class GridWorldAlgo : MonoBehaviour, I_DPL
                             { 1, 1, 0, 1, 0, 0, 1, 0},
                             { 2, 0, 0, 0, 1, 0, 0, 3} };
 
-    public List<state> states = new List<state>();
+    List<state> states = new List<state>();
+    state firstState;
 
-    public MDP mdp;
+    MDP mdp;
+    MCTS mcts;
+    private bool end = false;
+    private noeud firstNoeud;
+    private noeud curNoeud;
+    private state currentState;
 
-    // Start is called before the first frame update
     void Start()
     {
+        int playerX = 0, playerY = 0;
         for (int x = 0; x < sizeX; x++)
         {
             for (int y = 0; y < sizeY; y++)
@@ -60,6 +66,8 @@ public class GridWorldAlgo : MonoBehaviour, I_DPL
                         inst.transform.position = new Vector3(x - sizeX / 2, y - sizeY / 2, 0);
                         inst = Instantiate(floor);
                         inst.transform.position = new Vector3(x - sizeX / 2, y - sizeY / 2, 1);
+                        playerX = x;
+                        playerY = y;
                         break;
                     case 3:
                         inst = Instantiate(finish);
@@ -70,10 +78,19 @@ public class GridWorldAlgo : MonoBehaviour, I_DPL
                 }
             }
         }
-        mdp = new MDP(this);
-        //Value Iteration
-        if (!policy)
+        if(useMcts)
         {
+            firstState = new state();
+            firstState.key = new List<int>() { playerX, playerY };
+            firstState.value = 0;
+            firstState.policy = Random.Range(0, 4);
+            mcts = new MCTS(this);
+        }
+        else
+            mdp = new MDP(this);
+        if (!policy && !useMcts)
+        {
+            //Value Iteration
             mdp.allValueEvaluation();
             mdp.PolicyImprovement();
             drawArrows();
@@ -83,13 +100,56 @@ public class GridWorldAlgo : MonoBehaviour, I_DPL
     // Update is called once per frame
     void FixedUpdate()
     {
-        //Policy iteration
-        if (policy)
+        if (end)
         {
-            deleteArrows();
+            if (curNoeud.childs[currentState.policy] != null)
+            {
+                curNoeud = curNoeud.childs[currentState.policy];
+                currentState = curNoeud.state;
+                drawState();
+            }
+            else
+            {
+                curNoeud = firstNoeud.childs[firstNoeud.state.policy];
+                currentState = curNoeud.state;
+                drawState();
+            }
+        }
+        else if(useMcts)
+        {
+            //MCTS
+            while (!mcts.selection())
+            {
+                mcts.expension();
+                mcts.simulation();
+                mcts.propagation();
+            }
+            mcts.expension();
+            mcts.simulation();
+            mcts.propagation();
+            end = true;
+            firstNoeud = mcts.getStates();
+            curNoeud = firstNoeud;
+            currentState = curNoeud.state;
+            drawState();
+        }
+        else if (policy)
+        {
+            //Policy iteration
+            deleteObjects();
             mdp.PolicyEvaluation();
             drawArrows();
             policy = !mdp.PolicyImprovement();
+        }
+    }
+
+    private void drawState()
+    {
+        if(currentState != null)
+        {
+            deleteObjects();
+            Vector3 pos = new Vector3(currentState.key[0] - sizeX / 2, currentState.key[1] - sizeY / 2, -1);
+            Instantiate(player, pos, Quaternion.Euler(0, 0, 0), parent.transform);
         }
     }
 
@@ -105,30 +165,30 @@ public class GridWorldAlgo : MonoBehaviour, I_DPL
             switch (st.policy)
             {
                 case 0:
-                    inst = Instantiate(arrow0, arrowParent.transform);
+                    inst = Instantiate(arrow0, parent.transform);
                     inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, -1);
                     break;
                 case 1:
-                    inst = Instantiate(arrow1, arrowParent.transform);
+                    inst = Instantiate(arrow1, parent.transform);
                     inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, -1);
                     break;
                 case 2:
-                    inst = Instantiate(arrow2, arrowParent.transform);
+                    inst = Instantiate(arrow2, parent.transform);
                     inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, -1);
                     break;
                 case 3:
-                    inst = Instantiate(arrow3, arrowParent.transform);
+                    inst = Instantiate(arrow3, parent.transform);
                     inst.transform.position = new Vector3(x-sizeX/2, y-sizeY/2, -1);
                     break;
             }
         }
     }
 
-    void deleteArrows()
+    void deleteObjects()
     {
-        for(int i = 0; i < arrowParent.transform.childCount; i++)
+        for(int i = 0; i < parent.transform.childCount; i++)
         {
-            Destroy(arrowParent.transform.GetChild(i).gameObject);
+            Destroy(parent.transform.GetChild(i).gameObject);
         }
     }
 
@@ -181,11 +241,36 @@ public class GridWorldAlgo : MonoBehaviour, I_DPL
 
     public state getFirstState()
     {
-        return null;
+        return firstState;
     }
 
-    public List<int> getNextStateMCTS(state st, int action)
+    public List<int> getNextStateKey(state st, int action)
     {
+        int x = st.key[0];
+        int y = st.key[1];
+        switch (action)
+        {
+            case 0:
+                if (y - 1 >= 0)
+                    if (grid[x, y - 1] != 1)
+                        return new List<int>() { x, y - 1 } ;
+                break;
+            case 1:
+                if (x - 1 >= 0)
+                    if (grid[x - 1, y] != 1)
+                        return new List<int>() { x - 1, y };
+                break;
+            case 2:
+                if (y + 1 < sizeY)
+                    if (grid[x, y + 1] != 1)
+                        return new List<int>() { x, y + 1 };
+                break;
+            case 3:
+                if (x + 1 < sizeX)
+                    if (grid[x + 1, y] != 1)
+                        return new List<int>() { x + 1, y };
+                break;
+        }
         return null;
     }
 }

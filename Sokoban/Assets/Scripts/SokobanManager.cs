@@ -11,22 +11,18 @@ public class SokobanManager : MonoBehaviour, I_DPL
     public GameObject finish;
     public GameObject crate;
 
-    public Tilemap tilemap;
     public Vector3Int[] cratesPos;
     public Vector3Int playerPos;
 
     public GameObject parent;
 
-    private GridLayout gridLayout;
-    private GameObject[] crates;
-
-    // Array to store integer representation of the tilemap
-    //private int[,] integerTilemap;
+    private noeud firstNoeud;
+    private noeud curNoeud;
     
     private int[,] grid = { { 0,0,2,0,0 },
                             { 4,3,4,4,0 },
                             { 0,0,0,4,2 },
-                            { 0,0,0,0,2 },
+                            { 0,0,0,0,0 },
                             { 2,0,0,2,0 } };
     /*
     private int[,] grid = { {0,0,1,1,1,1,1,0 },
@@ -41,12 +37,11 @@ public class SokobanManager : MonoBehaviour, I_DPL
     int sizeY = 5, sizeX = 5;
     List<state> states = new List<state>();
     public int nbCrates = 1;
-    bool policy = true, useMcts = true;
+    public bool policy = true, useMcts = true;
     bool draw = false, end = false;
     MDP mdp;
     MCTS mcts;
     state currentState;
-    int index = 0;
 
     public List<int> getActions()
     {
@@ -55,128 +50,57 @@ public class SokobanManager : MonoBehaviour, I_DPL
 
     public state getNextState(state st, int action)
     {
-        int x = st.key[0];
-        int y = st.key[1];
-        switch (action)
-        {
-            case 0:
-                if (y - 1 < 0 || grid[x, y - 1] == 1)
-                    return null;
-                else
-                    y--;
-                break;
-            case 1:
-                if (x - 1 < 0 || grid[x - 1, y] == 1)
-                    return null;
-                else
-                    x--;
-                break;
-            case 2:
-                if (y +  1 >= sizeX || grid[x, y + 1] == 1)
-                    return null;
-                else
-                    y++;
-                break;
-            case 3:
-                if (x + 1 >= sizeY || grid[x + 1, y] == 1)
-                    return null;
-                else
-                    x++;
-                break;
-        }
-        List<int> newKey = new List<int>();
-        newKey.Add(x);
-        newKey.Add(y);
-
-        for (int i = 0; i < nbCrates; i++)
-        {
-            int xc = st.key[(i + 1) * 2];
-            int yc = st.key[((i + 1) * 2) + 1];
-
-            if (x == xc && y == yc)
-            {
-                switch (action)
-                {
-                    case 0:
-                        if (yc - 1 < 0 || grid[xc, yc - 1] == 1)
-                            return null;
-                        else
-                            yc--;
-                        break;
-                    case 1:
-                        if (xc - 1 < 0 || grid[xc - 1, yc] == 1)
-                            return null;
-                        else
-                            xc--;
-                        break;
-                    case 2:
-                        if (yc + 1 >= sizeX || grid[xc, yc + 1] == 1)
-                            return null;
-                        else
-                            yc++;
-                        break;
-                    case 3:
-                        if (xc + 1 >= sizeY || grid[xc + 1, yc] == 1)
-                            return null;
-                        else
-                            xc++;
-                        break;
-                }
-                for (int j = 0; j < nbCrates; j++)
-                {
-                    int xc2 = st.key[(i + 1) * 2];
-                    int yc2 = st.key[((i + 1) * 2) + 1];
-                    if (j != i && xc == xc2 && yc == yc2)
-                        return null;
-                }
-            }
-            newKey.Add(xc);
-            newKey.Add(yc);
-        }
-        return states.First(t => t.key.SequenceEqual(newKey));
+        List<int> newKey = getNextStateKey(st, action);
+        if (newKey != null)
+            return states.First(t => t.key.SequenceEqual(newKey));
+        else return null;
     }
 
-    public List<int> getNextStateMCTS(state st, int action)
+    public List<int> getNextStateKey(state st, int action)
     {
-        int x = st.key[0];
-        int y = st.key[1];
+        int y = st.key[0];
+        int x = st.key[1];
+        //On vérifie si la position du joueur n'est pas en dehors de la carte ou sur un mur
         switch (action)
         {
             case 0:
-                if (y - 1 < 0 || grid[x, y - 1] == 1)
-                    return null;
-                else
-                    y--;
-                break;
-            case 1:
-                if (x - 1 < 0 || grid[x - 1, y] == 1)
+                if (x - 1 < 0 || grid[y, x - 1] == 1)
                     return null;
                 else
                     x--;
                 break;
-            case 2:
-                if (y + 1 >= sizeX || grid[x, y + 1] == 1)
+            case 1:
+                if (y - 1 < 0 || grid[y - 1, x] == 1)
                     return null;
                 else
-                    y++;
+                    y--;
                 break;
-            case 3:
-                if (x + 1 >= sizeY || grid[x + 1, y] == 1)
+            case 2:
+                if (x + 1 >= sizeX || grid[y, x + 1] == 1)
                     return null;
                 else
                     x++;
                 break;
+            case 3:
+                if (y + 1 >= sizeY || grid[y + 1, x] == 1)
+                    return null;
+                else
+                    y++;
+                break;
         }
         List<int> newKey = new List<int>();
-        newKey.Add(x);
         newKey.Add(y);
+        newKey.Add(x);
 
+        //Si l'action est valide on vérifie si la position du joueur est sur une caisse
         for (int i = 0; i < nbCrates; i++)
         {
             int xc = st.key[(i + 1) * 2];
             int yc = st.key[((i + 1) * 2) + 1];
 
-            if (x == xc && y == yc)
+            //Si c'est le cas on déplace la caisse dans la même direction
+            //En vérifiant si elle n'est pas en dehors de la carte ou sur un mur
+            if (y == xc && x == yc)
             {
                 switch (action)
                 {
@@ -205,6 +129,8 @@ public class SokobanManager : MonoBehaviour, I_DPL
                             xc++;
                         break;
                 }
+                //On vérifie en suite que la caisse n'est pas au même endroit qu'une autre caisse
+                //Sinon on annule le déplacement
                 for (int j = 0; j < nbCrates; j++)
                 {
                     int xc2 = st.key[(j + 1) * 2];
@@ -222,24 +148,17 @@ public class SokobanManager : MonoBehaviour, I_DPL
     public float getReward(state st)
     {
         if (st == null)
-            return nbCrates;
+            return 0;
         float reward = 0;
-        try
+        for (int i = 0; i < nbCrates; i++)
         {
-            for (int i = 0; i < nbCrates; i++)
-            {
-                int x = st.key[(i + 1) * 2];
-                int y = st.key[((i + 1) * 2) + 1];
+            int x = st.key[(i + 1) * 2];
+            int y = st.key[((i + 1) * 2) + 1];
 
-                if (grid[x, y] == 2)
-                {
-                    reward += 1 / (float)nbCrates;
-                }
+            if (grid[x, y] == 2)
+            {
+                reward += 1 / (float)nbCrates;
             }
-        }
-        catch(System.Exception e)
-        {
-            int a = 0;
         }
         return reward;
     }
@@ -264,6 +183,7 @@ public class SokobanManager : MonoBehaviour, I_DPL
         {
             for (int y = 0; y < sizeX; y++)
             {
+                //Si on utilise pas le mcts on initialise tous les états possible
                 if (!useMcts)
                 {
                     List<int> xy = new List<int>() { x, y };
@@ -305,6 +225,8 @@ public class SokobanManager : MonoBehaviour, I_DPL
                 }
             }
         }
+
+        //on initialise l'état de départ
         List<int> startKey = new List<int>();
         startKey.Add(playerPos[0]);
         startKey.Add(playerPos[1]);
@@ -313,6 +235,7 @@ public class SokobanManager : MonoBehaviour, I_DPL
             startKey.Add(cratePos[i][0]);
             startKey.Add(cratePos[i][1]);
         }
+
         if (useMcts)
         {
             currentState = new state();
@@ -357,7 +280,6 @@ public class SokobanManager : MonoBehaviour, I_DPL
 
     void FixedUpdate()
     {
-        //Policy iteration
         if (draw && !end)
         {
             drawState();
@@ -371,17 +293,22 @@ public class SokobanManager : MonoBehaviour, I_DPL
         }
         else if(end)
         {
-            if (index < states.Count() - 1)
+            if(curNoeud.childs[currentState.policy] != null)
             {
-                currentState = states[index];
+                curNoeud = curNoeud.childs[currentState.policy];
+                currentState = curNoeud.state;
                 drawState();
-                index++;
             }
             else
-                index = 0;
+            {
+                curNoeud = firstNoeud.childs[firstNoeud.state.policy];
+                currentState = curNoeud.state;
+                drawState();
+            }
         }
         else if (useMcts)
         {
+            //MCTS
             while(!mcts.selection())
             {
                 mcts.expension();
@@ -392,10 +319,14 @@ public class SokobanManager : MonoBehaviour, I_DPL
             mcts.simulation();
             mcts.propagation();
             end = true;
-            states = mcts.getStates();
+            firstNoeud = mcts.getStates();
+            curNoeud = firstNoeud;
+            currentState = curNoeud.state;
+            drawState();
         }
         else if (policy)
         {
+            //Policy evaluation
             mdp.PolicyEvaluation();
             draw = mdp.PolicyImprovement();
         }
