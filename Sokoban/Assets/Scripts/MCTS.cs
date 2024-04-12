@@ -68,14 +68,19 @@ public class MCTS
             }
             else
             {
-                state nextState = new state();
-                nextState.key = nextStateKey;
-                nextState.policy = Random.Range(0, 4);
-                nextState.value = 0;
-                noeud nextNode = new noeud();
-                nextNode.state = nextState;
-                nextNode.parent = currentNode;
-                allNoeud.Add(nextNode);
+                noeud nextNode = allNoeud.FirstOrDefault(t => t.state.key.SequenceEqual(nextStateKey));
+                if(nextNode == null)
+                {
+                    state nextState = new state();
+                    nextState.key = nextStateKey;
+                    nextState.policy = Random.Range(0, 4);
+                    nextState.value = 0;
+                    //allStates.Add(nextState);
+                    nextNode = new noeud();
+                    nextNode.state = nextState;
+                    nextNode.parent = currentNode;
+                    allNoeud.Add(nextNode);
+                }
                 currentNode.childs[i] = nextNode;
             }
         }
